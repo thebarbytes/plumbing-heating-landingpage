@@ -1,0 +1,73 @@
+---
+import { siteConfig } from '../config/site';
+
+interface Props {
+  underCut?: boolean;
+  class?: string;
+}
+
+const { underCut = false, class: className } = Astro.props;
+const { marquee } = siteConfig;
+const copies = [false, true];
+---
+
+<div
+  role="region"
+  aria-label={marquee.ariaLabel}
+  data-glow
+  class:list={[
+    'marquee relative overflow-hidden bg-accent text-ink',
+    underCut ? '-mt-[var(--notch)] pb-3 pt-[calc(var(--notch)+0.75rem)]' : 'py-3',
+    className,
+  ]}
+>
+  <div class="track flex w-max">
+    {
+      copies.map((isCopy) => (
+        <ul class="flex shrink-0 items-center" aria-hidden={isCopy ? 'true' : undefined}>
+          {marquee.items.map((item) => (
+            <li class="flex items-center whitespace-nowrap font-display text-xl font-bold uppercase tracking-widest">
+              <span>{item}</span>
+              <span aria-hidden="true" class="mx-6 inline-block h-2 w-2 rotate-45 bg-ink" />
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .track {
+    animation: marquee-scroll 45s linear infinite;
+    will-change: transform;
+  }
+
+  .marquee:hover .track,
+  .marquee:focus-within .track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-scroll {
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      animation: none;
+      width: auto;
+      flex-wrap: wrap;
+    }
+
+    .track ul {
+      flex-wrap: wrap;
+      row-gap: 0.5rem;
+    }
+
+    .track ul[aria-hidden='true'] {
+      display: none;
+    }
+  }
+</style>

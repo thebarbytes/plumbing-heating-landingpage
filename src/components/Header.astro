@@ -1,0 +1,362 @@
+---
+import Icon from './Icon.astro';
+import Button from './Button.astro';
+import { siteConfig } from '../config/site';
+
+const { business, branding, nav, cta, ui } = siteConfig;
+
+const normalize = (path: string): string => (path.length > 1 ? path.replace(/\/+$/, '') : path);
+const current = normalize(Astro.url.pathname);
+const isCurrent = (href: string): boolean => normalize(href.split('#')[0] || '/') === current;
+
+const desktopLink =
+  'relative inline-flex items-center px-3 py-2 font-display text-lg font-semibold uppercase tracking-wider text-ondark/90 no-underline transition-colors hover:text-accent after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-accent after:transition-transform hover:after:scale-x-100 aria-[current=page]:text-accent aria-[current=page]:after:scale-x-100';
+
+const mobileLink =
+  'block py-3 font-display text-2xl font-bold uppercase tracking-wide text-ondark no-underline transition-colors hover:text-accent aria-[current=page]:text-accent';
+---
+
+<header
+  id="site-header"
+  data-scrolled="false"
+  class="dark sticky top-[var(--emergency-h)] z-50 border-b border-white/10 transition-colors duration-300 data-[scrolled=true]:bg-dark/85 data-[scrolled=true]:backdrop-blur-md"
+>
+  <div class="container-site flex h-[var(--header-h)] items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-3 no-underline" aria-label={`${business.name} home`}>
+      <img src={branding.logoSrc} alt="" width="40" height="40" class="h-10 w-10 rounded-lg" />
+      <span class="font-display text-[1.35rem] font-extrabold uppercase leading-none tracking-wide sm:text-2xl">
+        {business.name}
+      </span>
+    </a>
+
+    <nav aria-label={ui.primaryNavLabel} class="hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {
+          nav.map((item, index) =>
+            item.children ? (
+              <li class="group/dd relative" data-dropdown data-open="false">
+                <div class="flex items-center">
+                  <a
+                    href={item.href}
+                    class={desktopLink}
+                    aria-current={isCurrent(item.href) ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </a>
+                  <button
+                    type="button"
+                    data-dropdown-toggle
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    aria-controls={`dropdown-${index}`}
+                    aria-label={ui.servicesMenuLabel}
+                    class="-ml-1 inline-flex h-9 w-8 items-center justify-center rounded text-ondark/90 transition-colors hover:text-accent"
+                  >
+                    <Icon
+                      name="chevron-down"
+                      size={18}
+                      class="transition-transform group-data-[open=true]/dd:rotate-180"
+                    />
+                  </button>
+                </div>
+                <div
+                  id={`dropdown-${index}`}
+                  data-dropdown-panel
+                  class="invisible absolute left-0 top-full w-[22rem] translate-y-2 pt-3 opacity-0 transition-[opacity,translate,visibility] duration-200 group-data-[open=true]/dd:visible group-data-[open=true]/dd:translate-y-0 group-data-[open=true]/dd:opacity-100"
+                >
+                  <ul class="rounded-xl bg-card p-2 text-ink shadow-lift ring-1 ring-line [&_:focus-visible]:outline-steel">
+                    {item.children.map((child) => (
+                      <li>
+                        <a
+                          href={child.href}
+                          class="block rounded-lg px-4 py-3 no-underline transition-colors hover:bg-page focus-visible:bg-page"
+                        >
+                          <span class="block font-display text-lg font-bold uppercase tracking-wide">
+                            {child.label}
+                          </span>
+                          {child.description && (
+                            <span class="block text-sm text-muted">{child.description}</span>
+                          )}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ) : (
+              <li>
+                <a
+                  href={item.href}
+                  class={desktopLink}
+                  aria-current={isCurrent(item.href) ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:block">
+        <Button href={cta.primary.href}>{cta.primary.label}</Button>
+      </div>
+      <button
+        type="button"
+        id="menu-toggle"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+        aria-label={ui.menuOpenLabel}
+        class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 transition-colors hover:border-accent hover:text-accent lg:hidden"
+      >
+        <Icon name="menu" size={24} />
+      </button>
+    </div>
+  </div>
+</header>
+
+<div
+  id="mobile-menu"
+  data-open="false"
+  role="dialog"
+  aria-modal="true"
+  aria-label={ui.primaryNavLabel}
+  class="group/menu invisible fixed inset-0 z-[80] transition-[visibility] duration-300 data-[open=true]:visible lg:hidden"
+>
+  <div
+    data-menu-close
+    class="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 group-data-[open=true]/menu:opacity-100"
+  >
+  </div>
+
+  <div
+    id="mobile-menu-panel"
+    class="dark absolute right-0 top-0 flex h-full w-[min(88vw,24rem)] translate-x-full flex-col overflow-y-auto shadow-lift transition-[translate] duration-300 group-data-[open=true]/menu:translate-x-0"
+  >
+    <div class="flex h-[var(--header-h)] shrink-0 items-center justify-between border-b border-white/10 px-5">
+      <span class="font-display text-xl font-extrabold uppercase tracking-wide">{business.name}</span>
+      <button
+        type="button"
+        id="menu-close"
+        data-menu-close
+        aria-label={ui.menuCloseLabel}
+        class="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 transition-colors hover:border-accent hover:text-accent"
+      >
+        <Icon name="close" size={22} />
+      </button>
+    </div>
+
+    <nav aria-label={ui.primaryNavLabel} class="flex-1 px-5 py-3">
+      <ul class="divide-y divide-white/10">
+        {
+          nav.map((item, index) =>
+            item.children ? (
+              <li class="group/acc" data-accordion data-open="false">
+                <div class="flex items-center justify-between">
+                  <a
+                    href={item.href}
+                    class={`${mobileLink} flex-1`}
+                    aria-current={isCurrent(item.href) ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </a>
+                  <button
+                    type="button"
+                    data-accordion-toggle
+                    aria-expanded="false"
+                    aria-controls={`mobile-sub-${index}`}
+                    aria-label={ui.servicesMenuLabel}
+                    class="inline-flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:text-accent"
+                  >
+                    <Icon
+                      name="chevron-down"
+                      size={22}
+                      class="transition-transform group-data-[open=true]/acc:rotate-180"
+                    />
+                  </button>
+                </div>
+                <div
+                  id={`mobile-sub-${index}`}
+                  class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-data-[open=true]/acc:grid-rows-[1fr]"
+                >
+                  <ul class="invisible overflow-hidden transition-[visibility] duration-300 group-data-[open=true]/acc:visible">
+                    {item.children.map((child) => (
+                      <li>
+                        <a
+                          href={child.href}
+                          class="block py-2.5 pl-4 text-ondark/80 no-underline transition-colors hover:text-accent"
+                        >
+                          {child.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ) : (
+              <li>
+                <a
+                  href={item.href}
+                  class={mobileLink}
+                  aria-current={isCurrent(item.href) ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </nav>
+
+    <div class="flex shrink-0 flex-col gap-3 border-t border-white/10 p-5">
+      <Button href={business.phoneHref} icon="phone" iconPosition="left" size="lg" full>
+        {cta.callLabel}: {business.phone}
+      </Button>
+      <Button href={cta.primary.href} variant="outline-light" size="lg" full>
+        {cta.requestLabel}
+      </Button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const header = document.getElementById('site-header');
+
+  const onScroll = (): void => {
+    header?.setAttribute('data-scrolled', String(window.scrollY > 8));
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* Desktop dropdowns: hover, keyboard focus, tap ---------------------------- */
+  const dropdowns = Array.from(document.querySelectorAll<HTMLElement>('[data-dropdown]'));
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  const setDropdown = (dropdown: HTMLElement, open: boolean): void => {
+    dropdown.dataset.open = String(open);
+    dropdown
+      .querySelector<HTMLButtonElement>('[data-dropdown-toggle]')
+      ?.setAttribute('aria-expanded', String(open));
+  };
+
+  dropdowns.forEach((dropdown) => {
+    const toggle = dropdown.querySelector<HTMLButtonElement>('[data-dropdown-toggle]');
+
+    toggle?.addEventListener('click', () => {
+      setDropdown(dropdown, dropdown.dataset.open !== 'true');
+    });
+
+    dropdown.addEventListener('mouseenter', () => {
+      if (canHover.matches) setDropdown(dropdown, true);
+    });
+
+    dropdown.addEventListener('mouseleave', () => {
+      if (canHover.matches) setDropdown(dropdown, false);
+    });
+
+    dropdown.addEventListener('focusout', (event: FocusEvent) => {
+      const next = event.relatedTarget;
+      if (!(next instanceof Node) || !dropdown.contains(next)) {
+        setDropdown(dropdown, false);
+      }
+    });
+
+    dropdown.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && dropdown.dataset.open === 'true') {
+        setDropdown(dropdown, false);
+        toggle?.focus();
+      }
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    dropdowns.forEach((dropdown) => {
+      if (!(target instanceof Node) || !dropdown.contains(target)) {
+        setDropdown(dropdown, false);
+      }
+    });
+  });
+
+  /* Mobile slide-in menu ----------------------------------------------------- */
+  const menu = document.getElementById('mobile-menu');
+  const menuPanel = document.getElementById('mobile-menu-panel');
+  const menuToggle = document.getElementById('menu-toggle');
+  const menuClose = document.getElementById('menu-close');
+
+  const focusableItems = (): HTMLElement[] =>
+    menuPanel
+      ? Array.from(
+          menuPanel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'),
+        ).filter((el) => getComputedStyle(el).visibility !== 'hidden')
+      : [];
+
+  const setMenu = (open: boolean): void => {
+    if (!menu) return;
+    menu.dataset.open = String(open);
+    menuToggle?.setAttribute('aria-expanded', String(open));
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+    if (open) {
+      window.setTimeout(() => menuClose?.focus(), 60);
+    } else {
+      menuToggle?.focus();
+    }
+  };
+
+  menuToggle?.addEventListener('click', () => setMenu(true));
+
+  menu?.querySelectorAll<HTMLElement>('[data-menu-close]').forEach((el) => {
+    el.addEventListener('click', () => setMenu(false));
+  });
+
+  menuPanel?.addEventListener('click', (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest('a')) {
+      setMenu(false);
+    }
+  });
+
+  document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (!menu || menu.dataset.open !== 'true') return;
+
+    if (event.key === 'Escape') {
+      setMenu(false);
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const items = focusableItems();
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (!first || !last) return;
+
+    const active = document.activeElement;
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  window.matchMedia('(min-width: 1024px)').addEventListener('change', (event) => {
+    if (event.matches && menu?.dataset.open === 'true') {
+      setMenu(false);
+    }
+  });
+
+  /* Mobile accordion --------------------------------------------------------- */
+  document.querySelectorAll<HTMLElement>('[data-accordion]').forEach((accordion) => {
+    const toggle = accordion.querySelector<HTMLButtonElement>('[data-accordion-toggle]');
+    toggle?.addEventListener('click', () => {
+      const open = accordion.dataset.open !== 'true';
+      accordion.dataset.open = String(open);
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+  });
+</script>

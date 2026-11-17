@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import Guarantee from '../components/Guarantee.astro';
+import CTABanner from '../components/CTABanner.astro';
+import Button from '../components/Button.astro';
+import { siteConfig } from '../config/site';
+import type { BreadcrumbItem } from '../types/site';
+
+const { seo, pages, services, business, cta } = siteConfig;
+const meta = seo.pages.services;
+const hero = pages.services.hero;
+const breadcrumbs: BreadcrumbItem[] = [{ name: hero.eyebrow, path: '/services' }];
+---
+
+<BaseLayout title={meta.title} description={meta.description} breadcrumbs={breadcrumbs}>
+  <PageHero
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    description={hero.description}
+    breadcrumbs={breadcrumbs}
+  >
+    <Button href={business.phoneHref} size="lg" icon="phone" iconPosition="left">
+      {cta.callLabel}
+    </Button>
+    <Button href={cta.primary.href} size="lg" variant="outline-light" icon="arrow-right">
+      {cta.requestLabel}
+    </Button>
+  </PageHero>
+
+  <Section tone="light" labelledBy="page-heading">
+    <div class="space-y-20 lg:space-y-28">
+      {
+        services.items.map((service, index) => (
+          <ServiceCard service={service} variant="detail" reversed={index % 2 === 1} />
+        ))
+      }
+    </div>
+  </Section>
+
+  <Guarantee />
+  <CTABanner />
+</BaseLayout>

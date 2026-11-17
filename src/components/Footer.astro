@@ -1,0 +1,112 @@
+---
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { business, branding, footer, hours, social, demo, ui } = siteConfig;
+
+const year = new Date().getFullYear();
+const copyright = footer.copyright.replace('{year}', String(year));
+const addressLine = `${business.address.street}, ${business.address.city}, ${business.address.regionCode} ${business.address.postalCode}`;
+const isExternal = (href: string): boolean => /^https?:\/\//.test(href);
+---
+
+<footer class="dark cut-top relative overflow-hidden">
+  <div class="container-site pb-10 pt-14">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] lg:gap-12">
+      <div>
+        <a href="/" class="flex items-center gap-3 no-underline" aria-label={`${business.name} home`}>
+          <img src={branding.logoSrc} alt="" width="40" height="40" class="h-10 w-10 rounded-lg" loading="lazy" />
+          <span class="font-display text-2xl font-extrabold uppercase leading-none tracking-wide">
+            {business.name}
+          </span>
+        </a>
+        <p class="mt-4 max-w-sm text-ondark/70">{footer.blurb}</p>
+        <ul class="mt-5 flex flex-wrap gap-2" aria-label={ui.socialLabel}>
+          {
+            social.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-label={item.label}
+                  target={isExternal(item.href) ? '_blank' : undefined}
+                  rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}
+                  class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 transition-colors hover:border-accent hover:text-accent"
+                >
+                  <Icon name={item.platform} size={20} />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      {
+        footer.linkGroups.map((group) => (
+          <div>
+            <h2 class="font-display text-xl font-bold tracking-widest text-accent">{group.title}</h2>
+            <ul class="mt-4 space-y-2.5">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="text-ondark/80 no-underline transition-colors hover:text-accent hover:underline"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+
+      <div>
+        <h2 class="font-display text-xl font-bold tracking-widest text-accent">{hours.title}</h2>
+        <a
+          href={business.phoneHref}
+          class="mt-4 inline-block font-display text-3xl font-extrabold tracking-wide no-underline transition-colors hover:text-accent"
+        >
+          {business.phone}
+        </a>
+        <p class="mt-1 text-sm text-ondark/70">{hours.emergencyNote}</p>
+
+        <ul class="mt-4 space-y-1.5 text-sm">
+          {
+            hours.entries.map((entry) => (
+              <li class="flex justify-between gap-4">
+                <span class="text-ondark/80">{entry.label}</span>
+                <span class="text-right font-medium">{entry.displayTime}</span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <address class="mt-5 space-y-1 text-sm not-italic text-ondark/80">
+          <p>{addressLine}</p>
+          <p>
+            <a
+              href={`mailto:${business.email}`}
+              class="no-underline transition-colors hover:text-accent hover:underline"
+            >
+              {business.email}
+            </a>
+          </p>
+        </address>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-white/10">
+    <div class="container-site flex flex-col gap-2 py-5 text-sm text-ondark/70 md:flex-row md:items-center md:justify-between">
+      <p>{copyright}</p>
+      <p>{business.licenseLine}</p>
+    </div>
+    {
+      demo.enabled && (
+        <div class="border-t border-white/10">
+          <p class="container-site py-3 text-center text-sm text-ondark/70">{demo.footerNote}</p>
+        </div>
+      )
+    }
+  </div>
+</footer>

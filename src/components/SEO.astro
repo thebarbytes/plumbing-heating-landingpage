@@ -1,0 +1,150 @@
+---
+import { siteConfig } from '../config/site';
+import type { BreadcrumbItem, FAQItem } from '../types/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  path: string;
+  ogImage?: string;
+  noindex?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
+  faqs?: FAQItem[];
+}
+
+const {
+  title,
+  description,
+  path,
+  ogImage,
+  noindex = false,
+  breadcrumbs = [],
+  faqs = [],
+} = Astro.props;
+
+const { business, seo, branding, demo, hours, social, serviceAreas, theme } = siteConfig;
+
+const siteUrl = business.siteUrl.replace(/\/+$/, '');
+const toAbsolute = (value: string): string =>
+  /^https?:\/\//.test(value) ? value : `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
+
+const cleanPath = path === '/' ? '/' : `/${path.replace(/^\/+|\/+$/g, '')}/`;
+const canonical = toAbsolute(cleanPath);
+
+const pageTitle = title ? seo.titleTemplate.replace('%s', title) : seo.defaultTitle;
+const pageDescription = description ?? seo.defaultDescription;
+const imageUrl = toAbsolute(ogImage ?? branding.ogImageSrc);
+const shouldNoindex = demo.enabled || noindex;
+const robots = demo.enabled ? 'noindex, nofollow' : noindex ? 'noindex, follow' : 'index, follow';
+
+const sameAs = social.map((item) => item.href).filter((href) => /^https?:\/\//.test(href));
+
+const openingHours = hours.entries
+  .filter((entry) => !entry.closed)
+  .map((entry) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: entry.days,
+    opens: entry.opens,
+    closes: entry.closes,
+  }));
+
+const businessNode = {
+  '@type': 'Plumber',
+  '@id': `${siteUrl}/#business`,
+  name: business.name,
+  legalName: business.legalName,
+  url: `${siteUrl}/`,
+  description: business.description,
+  telephone: business.phoneHref.replace('tel:', ''),
+  email: business.email,
+  image: toAbsolute(branding.ogImageSrc),
+  logo: toAbsolute(branding.logoSrc),
+  priceRange: business.priceRange,
+  foundingDate: String(business.foundingYear),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: business.address.street,
+    addressLocality: business.address.city,
+    addressRegion: business.address.regionCode,
+    postalCode: business.address.postalCode,
+    addressCountry: business.address.countryCode,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: business.geo.latitude,
+    longitude: business.geo.longitude,
+  },
+  openingHoursSpecification: openingHours,
+  areaServed: serviceAreas.cities.map((city) => ({
+    '@type': 'City',
+    name: city,
+  })),
+  ...(sameAs.length > 0 ? { sameAs } : {}),
+};
+
+const websiteNode = {
+  '@type': 'WebSite',
+  '@id': `${siteUrl}/#website`,
+  url: `${siteUrl}/`,
+  name: business.name,
+  inLanguage: seo.lang,
+  publisher: { '@id': `${siteUrl}/#business` },
+};
+
+const graph: Record<string, unknown>[] = [businessNode, websiteNode];
+
+if (breadcrumbs.length > 0) {
+  graph.push({
+    '@type': 'BreadcrumbList',
+    itemListElement: [{ name: 'Home', path: '/' }, ...breadcrumbs].map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: toAbsolute(crumb.path === '/' ? '/' : `/${crumb.path.replace(/^\/+|\/+$/g, '')}/`),
+    })),
+  });
+}
+
+if (faqs.length > 0) {
+  graph.push({
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+    })),
+  });
+}
+
+const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
+---
+
+<title>{pageTitle}</title>
+<meta name="description" content={pageDescription} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={robots} />
+{shouldNoindex && <meta name="googlebot" content={robots} />}
+<meta name="theme-color" content={theme.themeColor} />
+
+<link rel="icon" href={branding.faviconSrc} type="image/svg+xml" />
+<link rel="apple-touch-icon" href={branding.appleTouchIconSrc} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={business.name} />
+<meta property="og:locale" content={seo.locale} />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={pageDescription} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:alt" content={branding.ogImageAlt} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={pageDescription} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={branding.ogImageAlt} />
+{seo.twitterHandle && <meta name="twitter:site" content={seo.twitterHandle} />}
+
+<script type="application/ld+json" set:html={jsonLd} />

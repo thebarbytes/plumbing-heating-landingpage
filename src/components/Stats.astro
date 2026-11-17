@@ -1,0 +1,58 @@
+---
+import Section from './Section.astro';
+import GlowBackground from './GlowBackground.astro';
+import { siteConfig } from '../config/site';
+
+const { stats, pages } = siteConfig;
+
+const format = (value: number, decimals: number): string =>
+  value.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+---
+
+<Section tone="dark" cut="both" labelledBy="stats-heading">
+  <GlowBackground slot="background" strength="medium" />
+  <h2 id="stats-heading" class="sr-only">{pages.home.statsLabel}</h2>
+
+  <ul class="grid grid-cols-2 gap-y-10 lg:grid-cols-4" data-reveal-stagger="100">
+    {
+      stats.map((stat) => {
+        const decimals = stat.decimals ?? 0;
+        const prefix = stat.prefix ?? '';
+        const suffix = stat.suffix ?? '';
+        return (
+          <li
+            data-reveal
+            class="border-l border-white/10 pl-5 first:border-l-0 first:pl-0 lg:pl-8 lg:first:pl-0 even:max-lg:pl-5 odd:max-lg:border-l-0 odd:max-lg:pl-0"
+          >
+            <p
+              data-counter={stat.value}
+              data-prefix={prefix}
+              data-suffix={suffix}
+              data-decimals={decimals}
+              class="font-display text-5xl font-extrabold leading-none tabular-nums text-accent sm:text-6xl lg:text-7xl"
+            >
+              {`${prefix}${format(stat.value, decimals)}${suffix}`}
+            </p>
+            <p class="mt-2 font-display text-lg font-semibold uppercase tracking-wider text-ondark/75">
+              {stat.label}
+            </p>
+          </li>
+        );
+      })
+    }
+  </ul>
+</Section>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    document.querySelectorAll<HTMLElement>('[data-counter]').forEach((el) => {
+      const decimals = Number(el.dataset.decimals) || 0;
+      el.textContent = `${el.dataset.prefix ?? ''}${(0).toFixed(decimals)}${el.dataset.suffix ?? ''}`;
+    });
+  }
+</script>

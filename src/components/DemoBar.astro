@@ -1,0 +1,49 @@
+---
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { demo } = siteConfig;
+const text = demo.barText.replace('{builder}', demo.builderName);
+---
+
+{
+  demo.enabled && (
+    <>
+      <div id="demo-bar" role="region" aria-label="Demo notice" class="relative z-[90] bg-steel text-white">
+        <div class="container-site flex items-center justify-center py-1.5 pr-10 text-center text-sm font-medium">
+          <p>{text}</p>
+          <button
+            type="button"
+            id="demo-bar-dismiss"
+            aria-label={demo.dismissLabel}
+            class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 transition-colors hover:bg-white/15"
+          >
+            <Icon name="close" size={16} />
+          </button>
+        </div>
+      </div>
+      <script is:inline>
+        try {
+          if (sessionStorage.getItem('demo-bar-dismissed') === '1') {
+            var bar = document.getElementById('demo-bar');
+            if (bar) bar.remove();
+          }
+        } catch (error) {}
+      </script>
+    </>
+  )
+}
+
+<script>
+  const bar = document.getElementById('demo-bar');
+  const dismiss = document.getElementById('demo-bar-dismiss');
+
+  dismiss?.addEventListener('click', () => {
+    bar?.remove();
+    try {
+      sessionStorage.setItem('demo-bar-dismissed', '1');
+    } catch {
+      /* storage unavailable */
+    }
+  });
+</script>

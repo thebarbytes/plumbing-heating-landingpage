@@ -1,0 +1,179 @@
+---
+import '../styles/global.css';
+import SEO from '../components/SEO.astro';
+import DemoBar from '../components/DemoBar.astro';
+import EmergencyBar from '../components/EmergencyBar.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BackToTop from '../components/BackToTop.astro';
+import MobileCallBar from '../components/MobileCallBar.astro';
+import { IMAGE_HOST, siteConfig } from '../config/site';
+import type { BreadcrumbItem, FAQItem } from '../types/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  noindex?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
+  faqs?: FAQItem[];
+}
+
+const { title, description, ogImage, noindex, breadcrumbs, faqs } = Astro.props;
+const { theme, seo, ui } = siteConfig;
+const c = theme.colors;
+
+const themeVars = [
+  `--bg:${c.bg}`,
+  `--surface:${c.surface}`,
+  `--surface-dark:${c.surfaceDark}`,
+  `--text:${c.text}`,
+  `--text-on-dark:${c.textOnDark}`,
+  `--muted:${c.muted}`,
+  `--accent:${c.accent}`,
+  `--accent-strong:${c.accentStrong}`,
+  `--accent-2:${c.accent2}`,
+  `--highlight:${c.highlight}`,
+  `--border:${c.border}`,
+  `--font-heading:${theme.headingFont}`,
+  `--font-body:${theme.bodyFont}`,
+].join(';');
+
+const fontOrigin = new URL(theme.fontsUrl).origin;
+---
+
+<!doctype html>
+<html lang={seo.lang} style={themeVars}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href={fontOrigin} />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href={IMAGE_HOST} crossorigin />
+    <link rel="stylesheet" href={theme.fontsUrl} />
+    <SEO
+      title={title}
+      description={description}
+      path={Astro.url.pathname}
+      ogImage={ogImage}
+      noindex={noindex}
+      breadcrumbs={breadcrumbs}
+      faqs={faqs}
+    />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">{ui.skipLinkLabel}</a>
+    <DemoBar />
+    <EmergencyBar />
+    <Header />
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <BackToTop />
+    <MobileCallBar />
+
+    <script>
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      /* Scroll reveal with optional stagger ---------------------------------- */
+      document.querySelectorAll<HTMLElement>('[data-reveal-stagger]').forEach((group) => {
+        const step = Number(group.dataset.revealStagger) || 90;
+        group.querySelectorAll<HTMLElement>('[data-reveal]').forEach((child, index) => {
+          child.style.setProperty('--reveal-delay', `${index * step}ms`);
+        });
+      });
+
+      const revealTargets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+      if (reduceMotion || !('IntersectionObserver' in window)) {
+        revealTargets.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const revealObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                revealObserver.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+        );
+        revealTargets.forEach((el) => revealObserver.observe(el));
+      }
+
+      /* Animated counters ---------------------------------------------------- */
+      const formatNumber = (value: number, decimals: number): string =>
+        value.toLocaleString('en-US', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+
+      const renderCounter = (el: HTMLElement, value: number): void => {
+        const decimals = Number(el.dataset.decimals) || 0;
+        const prefix = el.dataset.prefix ?? '';
+        const suffix = el.dataset.suffix ?? '';
+        el.textContent = `${prefix}${formatNumber(value, decimals)}${suffix}`;
+      };
+
+      const runCounter = (el: HTMLElement): void => {
+        const target = Number(el.dataset.counter) || 0;
+        if (reduceMotion) {
+          renderCounter(el, target);
+          return;
+        }
+        const duration = 1600;
+        const start = performance.now();
+        const tick = (now: number): void => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          renderCounter(el, target * eased);
+          if (progress < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            renderCounter(el, target);
+          }
+        };
+        requestAnimationFrame(tick);
+      };
+
+      const counters = document.querySelectorAll<HTMLElement>('[data-counter]');
+
+      if (reduceMotion || !('IntersectionObserver' in window)) {
+        counters.forEach((el) => renderCounter(el, Number(el.dataset.counter) || 0));
+      } else {
+        const counterObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                runCounter(entry.target as HTMLElement);
+                counterObserver.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.4 },
+        );
+        counters.forEach((el) => counterObserver.observe(el));
+      }
+
+      /* Pause glow animations when offscreen --------------------------------- */
+      if ('IntersectionObserver' in window) {
+        const glowObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              entry.target.classList.toggle('is-offscreen', !entry.isIntersecting);
+            });
+          },
+          { rootMargin: '120px' },
+        );
+        document
+          .querySelectorAll<HTMLElement>('[data-glow]')
+          .forEach((el) => glowObserver.observe(el));
+      }
+    </script>
+  </body>
+</html>

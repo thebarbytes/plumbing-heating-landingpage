@@ -1,0 +1,27 @@
+---
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { emergency } = siteConfig;
+---
+
+<div
+  role="region"
+  aria-label={emergency.headline}
+  class="sticky top-0 z-[60] h-[var(--emergency-h)] bg-accent text-ink"
+>
+  <div class="container-site flex h-full items-center justify-between gap-3">
+    <p class="flex min-w-0 items-center gap-2.5 font-display text-base font-bold uppercase tracking-wider sm:text-lg">
+      <span aria-hidden="true" class="animate-pulse-dot h-2.5 w-2.5 shrink-0 rounded-full bg-ink"></span>
+      <span class="truncate">{emergency.barText}</span>
+    </p>
+    <a
+      href={emergency.phoneHref}
+      aria-label={`${emergency.callLabel}: ${emergency.phone}`}
+      class="inline-flex shrink-0 items-center gap-1.5 font-display text-lg font-extrabold tracking-wide text-ink no-underline hover:underline focus-visible:outline-ink sm:text-xl"
+    >
+      <Icon name="phone" size={18} strokeWidth={2.25} />
+      {emergency.phone}
+    </a>
+  </div>
+</div>

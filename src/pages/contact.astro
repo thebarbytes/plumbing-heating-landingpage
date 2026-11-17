@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import ServiceRequestForm from '../components/ServiceRequestForm.astro';
+import ServiceAreaChecker from '../components/ServiceAreaChecker.astro';
+import Hours from '../components/Hours.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import { siteConfig } from '../config/site';
+import type { BreadcrumbItem } from '../types/site';
+import type { IconKey } from '../lib/icons';
+
+const { seo, pages, contact, business, emergency } = siteConfig;
+const meta = seo.pages.contact;
+const hero = pages.contact.hero;
+const labels = pages.contact.infoLabels;
+const breadcrumbs: BreadcrumbItem[] = [{ name: hero.eyebrow, path: '/contact' }];
+
+const addressLine = `${business.address.street}, ${business.address.city}, ${business.address.regionCode} ${business.address.postalCode}`;
+
+interface DetailRow {
+  label: string;
+  value: string;
+  href?: string;
+  icon: IconKey;
+}
+
+const details: DetailRow[] = [
+  { label: labels.phone, value: business.phone, href: business.phoneHref, icon: 'phone' },
+  { label: labels.email, value: business.email, href: `mailto:${business.email}`, icon: 'mail' },
+  { label: labels.address, value: addressLine, icon: 'map' },
+];
+---
+
+<BaseLayout title={meta.title} description={meta.description} breadcrumbs={breadcrumbs}>
+  <PageHero
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    description={hero.description}
+    breadcrumbs={breadcrumbs}
+  >
+    <Button href={emergency.phoneHref} size="lg" icon="phone" iconPosition="left">
+      {emergency.callLabel}: {emergency.phone}
+    </Button>
+  </PageHero>
+
+  <Section tone="light" labelledBy="contact-details-heading">
+    <div class="grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
+      <div data-reveal="left">
+        <ServiceRequestForm />
+      </div>
+
+      <div class="space-y-6" data-reveal="right">
+        <div class="rounded-2xl bg-card p-6 shadow-card ring-1 ring-line sm:p-8">
+          <h2 id="contact-details-heading" class="text-3xl">{contact.detailsTitle}</h2>
+          <ul class="mt-5 space-y-5">
+            {
+              details.map((row) => (
+                <li class="flex items-start gap-4">
+                  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-accent/15 text-accent-strong">
+                    <Icon name={row.icon} size={22} />
+                  </span>
+                  <div class="min-w-0">
+                    <p class="font-display text-sm font-bold uppercase tracking-widest text-muted">
+                      {row.label}
+                    </p>
+                    {row.href ? (
+                      <a
+                        href={row.href}
+                        class="break-words font-display text-2xl font-bold tracking-wide no-underline hover:text-accent-strong hover:underline"
+                      >
+                        {row.value}
+                      </a>
+                    ) : (
+                      <p class="font-medium">{row.value}</p>
+                    )}
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+          {
+            contact.bookingUrl && (
+              <div class="mt-6">
+                <Button href={contact.bookingUrl} variant="dark" full icon="arrow-right">
+                  {siteConfig.cta.requestLabel}
+                </Button>
+              </div>
+            )
+          }
+        </div>
+
+        <Hours as="h3" />
+      </div>
+    </div>
+  </Section>
+
+  <ServiceAreaChecker tone="surface" />
+
+  <section aria-label={contact.mapTitle} class="bg-page">
+    <div class="container-site pb-16 md:pb-24">
+      <div
+        class="aspect-[4/3] overflow-hidden rounded-2xl bg-dark shadow-card ring-1 ring-line sm:aspect-[16/7]"
+        data-reveal
+      >
+        <iframe
+          src={contact.mapEmbedUrl}
+          title={contact.mapTitle}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          class="h-full w-full border-0"
+          allowfullscreen
+        >
+        </iframe>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

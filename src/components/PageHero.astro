@@ -1,0 +1,87 @@
+---
+import Section from './Section.astro';
+import GlowBackground from './GlowBackground.astro';
+import Img from './Img.astro';
+import { siteConfig } from '../config/site';
+import type { BreadcrumbItem, ImageAsset } from '../types/site';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  description: string;
+  breadcrumbs?: BreadcrumbItem[];
+  image?: ImageAsset;
+}
+
+const { eyebrow, title, description, breadcrumbs = [], image } = Astro.props;
+const { nav, ui } = siteConfig;
+
+const homeLabel = nav[0]?.label ?? 'Home';
+const trail: BreadcrumbItem[] = [{ name: homeLabel, path: '/' }, ...breadcrumbs];
+---
+
+<Section
+  tone="dark"
+  cut="bottom"
+  labelledBy="page-heading"
+  pad={false}
+  class="z-10"
+  containerClass="pb-14 pt-12 md:pb-20 md:pt-16 lg:pb-24 lg:pt-20"
+>
+  <div slot="background" aria-hidden="true" class="absolute inset-0 -z-20">
+    {image && <Img image={image} priority fill sizes="100vw" />}
+  </div>
+  <div
+    slot="background"
+    aria-hidden="true"
+    class="absolute inset-0 -z-[15] bg-linear-to-r from-dark/95 via-dark/85 to-dark/55"
+  >
+  </div>
+  <GlowBackground slot="background" strength="medium" />
+
+  <div class="max-w-4xl" data-reveal-stagger="100">
+    {
+      trail.length > 1 && (
+        <nav aria-label={ui.breadcrumbLabel} data-reveal>
+          <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ondark/70">
+            {trail.map((crumb, index) => {
+              const last = index === trail.length - 1;
+              return (
+                <li class="flex items-center gap-2">
+                  {last ? (
+                    <span aria-current="page" class="font-semibold text-ondark">
+                      {crumb.name}
+                    </span>
+                  ) : (
+                    <a href={crumb.path} class="no-underline hover:text-accent hover:underline">
+                      {crumb.name}
+                    </a>
+                  )}
+                  {!last && (
+                    <span aria-hidden="true" class="text-accent">
+                      /
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+      )
+    }
+
+    <p class="eyebrow mt-6" data-reveal>{eyebrow}</p>
+    <h1
+      id="page-heading"
+      class="mt-3 text-[clamp(2.6rem,1.5rem+5vw,4.75rem)]"
+      data-reveal
+    >
+      {title}
+    </h1>
+    <p class="lead mt-5 max-w-2xl" data-reveal>{description}</p>
+
+    <div class="mt-8 flex flex-col gap-3 empty:hidden sm:flex-row" data-reveal>
+      <slot />
+    </div>
+  </div>
+</Section>

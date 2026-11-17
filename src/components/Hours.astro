@@ -1,0 +1,52 @@
+---
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+interface Props {
+  as?: 'h2' | 'h3';
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+
+const { as = 'h2', tone = 'light', class: className } = Astro.props;
+const { hours } = siteConfig;
+const Heading = as;
+---
+
+<div
+  class:list={[
+    'rounded-2xl p-6 sm:p-8',
+    tone === 'dark' ? 'dark' : 'bg-card shadow-card ring-1 ring-line',
+    className,
+  ]}
+>
+  <div class="flex items-center gap-3">
+    <span class="grid h-11 w-11 place-items-center rounded-lg bg-accent/15 text-accent-strong">
+      <Icon name="clock" size={24} />
+    </span>
+    <Heading class="text-3xl">{hours.title}</Heading>
+  </div>
+
+  <dl class="mt-5 divide-y divide-current/10">
+    {
+      hours.entries.map((entry) => (
+        <div class="flex items-baseline justify-between gap-4 py-3">
+          <dt class="font-medium">{entry.label}</dt>
+          <dd
+            class:list={[
+              'text-right font-display text-lg font-bold uppercase tracking-wide',
+              entry.closed && 'text-accent-strong',
+            ]}
+          >
+            {entry.displayTime}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <p class="mt-4 flex items-center gap-2.5 rounded-lg bg-accent px-4 py-3 font-display text-lg font-bold uppercase tracking-wide text-ink">
+    <span aria-hidden="true" class="animate-pulse-dot h-2.5 w-2.5 shrink-0 rounded-full bg-ink"></span>
+    {hours.emergencyNote}
+  </p>
+</div>

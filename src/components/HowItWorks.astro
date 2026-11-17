@@ -1,0 +1,55 @@
+---
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { howItWorks } = siteConfig;
+---
+
+<Section tone="light" labelledBy="how-heading">
+  <SectionHeading
+    id="how-heading"
+    align="center"
+    eyebrow={howItWorks.section.eyebrow}
+    title={howItWorks.section.title}
+    description={howItWorks.section.description}
+  />
+
+  <div class="steps relative mx-auto mt-14 max-w-5xl" data-reveal="fade">
+    <div
+      aria-hidden="true"
+      class="connector absolute bottom-7 left-[calc(1.75rem-1px)] top-7 w-0.5 origin-top bg-accent md:bottom-auto md:left-[calc(16.667%-0.5rem)] md:right-[calc(16.667%-0.5rem)] md:h-0.5 md:w-auto md:origin-left"
+    >
+    </div>
+
+    <ol class="relative grid gap-10 md:grid-cols-3 md:gap-6" data-reveal-stagger="140">
+      {
+        howItWorks.steps.map((step, index) => (
+          <li class="flex gap-5 md:flex-col md:items-center md:text-center" data-reveal>
+            <span class="relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full bg-accent text-ink shadow-card ring-4 ring-page">
+              <Icon name={step.icon} size={26} />
+            </span>
+            <div>
+              <span class="font-display text-sm font-bold tracking-widest text-accent-strong">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 class="text-3xl">{step.title}</h3>
+              <p class="mt-2 text-muted md:mx-auto md:max-w-xs">{step.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</Section>
+
+<style>
+  .connector {
+    transition: transform 1.4s var(--ease) 0.3s;
+  }
+
+  :global(.js) .steps:not(.is-visible) .connector {
+    transform: scale(0);
+  }
+</style>

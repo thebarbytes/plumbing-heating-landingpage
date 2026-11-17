@@ -1,0 +1,18 @@
+---
+import Button from './Button.astro';
+import { siteConfig } from '../config/site';
+
+const { business, cta } = siteConfig;
+---
+
+<nav
+  aria-label={`${cta.callLabel} / ${cta.requestLabel}`}
+  class="dark fixed inset-x-0 bottom-0 z-[70] grid h-[calc(var(--mobile-bar-h)_+_env(safe-area-inset-bottom,0px))] grid-cols-2 items-center gap-2 border-t border-white/10 bg-dark/95 px-3 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md md:hidden"
+>
+  <Button href={business.phoneHref} icon="phone" iconPosition="left" full>
+    {cta.callLabel}
+  </Button>
+  <Button href={cta.primary.href} variant="outline-light" full>
+    {cta.requestLabel}
+  </Button>
+</nav>

@@ -1,0 +1,47 @@
+---
+import { siteConfig } from '../config/site';
+
+interface Props {
+  variant?: 'orange' | 'steel';
+  strength?: 'soft' | 'medium' | 'strong';
+  class?: string;
+}
+
+const { variant = 'orange', strength = 'medium', class: className } = Astro.props;
+
+const src = siteConfig.images.glow[variant];
+const opacity = { soft: 0.35, medium: 0.55, strong: 0.8 }[strength];
+const tone = variant === 'orange' ? 'var(--accent)' : 'var(--accent-2)';
+
+const gradients = [
+  `radial-gradient(48% 42% at 78% 18%, color-mix(in srgb, ${tone} 42%, transparent), transparent 70%)`,
+  `radial-gradient(40% 36% at 14% 82%, color-mix(in srgb, ${tone} 24%, transparent), transparent 72%)`,
+  `radial-gradient(30% 30% at 52% 50%, color-mix(in srgb, ${tone} 12%, transparent), transparent 75%)`,
+].join(',');
+---
+
+<div
+  aria-hidden="true"
+  data-glow
+  class:list={['pointer-events-none absolute inset-0 -z-10 overflow-hidden', className]}
+>
+  {
+    src ? (
+      <div
+        class="glow-layer animate-glow-drift absolute inset-0 bg-cover bg-center"
+        style={`background-image:url('${src}');opacity:${opacity};`}
+      />
+    ) : (
+      <div class="absolute inset-0" style={`background-image:${gradients};`} />
+    )
+  }
+</div>
+
+<style>
+  @media (max-width: 767px), (prefers-reduced-motion: reduce) {
+    .glow-layer {
+      animation: none;
+      transform: scale(1.4);
+    }
+  }
+</style>

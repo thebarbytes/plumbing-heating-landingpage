@@ -1,0 +1,169 @@
+---
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { testimonials } = siteConfig;
+const total = testimonials.items.length;
+---
+
+<Section tone="light" labelledBy="reviews-heading">
+  <div
+    data-slider
+    role="region"
+    aria-roledescription="carousel"
+    aria-label={testimonials.section.title}
+  >
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading
+        id="reviews-heading"
+        eyebrow={testimonials.section.eyebrow}
+        title={testimonials.section.title}
+        description={testimonials.section.description}
+      />
+      <div class="flex gap-3">
+        <button
+          type="button"
+          data-slider-prev
+          aria-label={testimonials.previousLabel}
+          class="grid h-12 w-12 place-items-center rounded-full border-2 border-ink/20 transition-colors hover:border-accent hover:text-accent-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-ink/20 disabled:hover:text-inherit"
+        >
+          <Icon name="arrow-right" size={22} class="rotate-180" />
+        </button>
+        <button
+          type="button"
+          data-slider-next
+          aria-label={testimonials.nextLabel}
+          class="grid h-12 w-12 place-items-center rounded-full border-2 border-ink/20 transition-colors hover:border-accent hover:text-accent-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-ink/20 disabled:hover:text-inherit"
+        >
+          <Icon name="arrow-right" size={22} />
+        </button>
+      </div>
+    </div>
+
+    <div
+      data-slider-track
+      tabindex="0"
+      aria-label={testimonials.section.title}
+      class="relative mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {
+        testimonials.items.map((item, index) => (
+          <div
+            data-slide
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${index + 1} / ${total}`}
+            class="shrink-0 basis-[88%] snap-start sm:basis-[calc(50%-0.625rem)] lg:basis-[calc((100%-2.5rem)/3)]"
+          >
+            <figure class="flex h-full flex-col rounded-xl bg-dark p-7 text-ondark shadow-card">
+              <div
+                role="img"
+                aria-label={`${item.rating} / 5`}
+                class="flex gap-0.5 text-signal"
+              >
+                {Array.from({ length: 5 }, (_, n) => (
+                  <Icon name="star" size={20} class={n < item.rating ? '' : 'opacity-25'} />
+                ))}
+              </div>
+              <blockquote class="mt-4 flex-1">
+                <p class="text-lg leading-relaxed text-ondark/90">{item.text}</p>
+              </blockquote>
+              <figcaption class="mt-6 border-t border-white/10 pt-4">
+                <p class="font-display text-xl font-bold uppercase tracking-wide">{item.name}</p>
+                <p class="text-sm text-ondark/70">
+                  {item.location} · {item.service}
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mt-4 flex justify-center">
+      {
+        testimonials.items.map((_, index) => (
+          <button
+            type="button"
+            data-slider-dot
+            aria-label={`${testimonials.dotLabel} ${index + 1}`}
+            aria-current={index === 0 ? 'true' : 'false'}
+            class="group/dot p-2"
+          >
+            <span class="block h-2.5 w-2.5 rounded-full bg-ink/25 transition-all duration-300 group-hover/dot:bg-ink/50 group-aria-[current=true]/dot:w-7 group-aria-[current=true]/dot:bg-accent" />
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</Section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-slider]');
+  const track = root?.querySelector<HTMLElement>('[data-slider-track]') ?? null;
+
+  if (root && track) {
+    const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-slide]'));
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-slider-dot]'));
+    const prev = root.querySelector<HTMLButtonElement>('[data-slider-prev]');
+    const next = root.querySelector<HTMLButtonElement>('[data-slider-next]');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const behavior: ScrollBehavior = reduceMotion ? 'auto' : 'smooth';
+    let ticking = false;
+
+    const stepSize = (): number => {
+      const first = slides[0];
+      const second = slides[1];
+      return first && second ? second.offsetLeft - first.offsetLeft : track.clientWidth;
+    };
+
+    const update = (): void => {
+      const left = track.scrollLeft;
+      const atStart = left <= 4;
+      const atEnd = left + track.clientWidth >= track.scrollWidth - 4;
+
+      let active = 0;
+      let best = Number.POSITIVE_INFINITY;
+      slides.forEach((slide, index) => {
+        const distance = Math.abs(slide.offsetLeft - left);
+        if (distance < best) {
+          best = distance;
+          active = index;
+        }
+      });
+      if (atEnd) active = slides.length - 1;
+
+      dots.forEach((dot, index) => dot.setAttribute('aria-current', String(index === active)));
+      if (prev) prev.disabled = atStart;
+      if (next) next.disabled = atEnd;
+      ticking = false;
+    };
+
+    track.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+
+    window.addEventListener('resize', update);
+
+    prev?.addEventListener('click', () => track.scrollBy({ left: -stepSize(), behavior }));
+    next?.addEventListener('click', () => track.scrollBy({ left: stepSize(), behavior }));
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        const slide = slides[index];
+        if (slide) track.scrollTo({ left: slide.offsetLeft, behavior });
+      });
+    });
+
+    update();
+  }
+</script>

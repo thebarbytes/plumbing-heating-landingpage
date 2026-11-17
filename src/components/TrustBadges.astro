@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { trustBadges } = siteConfig;
+---
+
+<div class="border-b border-line bg-card">
+  <div class="container-site">
+    <ul class="grid sm:grid-cols-2 lg:grid-cols-4" data-reveal-stagger="80">
+      {
+        trustBadges.map((badge) => (
+          <li
+            data-reveal
+            class="flex items-start gap-4 py-6 lg:border-l lg:border-line lg:px-6 lg:first:border-l-0 lg:first:pl-0"
+          >
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent/15 text-accent-strong">
+              <Icon name={badge.icon} size={26} />
+            </span>
+            <div>
+              <p class="font-display text-xl font-bold uppercase leading-none tracking-wide">
+                {badge.title}
+              </p>
+              <p class="mt-1.5 text-sm text-muted">{badge.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>

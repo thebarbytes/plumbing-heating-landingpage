@@ -1,0 +1,91 @@
+---
+import Icon from './Icon.astro';
+import type { IconKey } from '../lib/icons';
+
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'dark' | 'outline-light' | 'outline-dark';
+  size?: 'md' | 'lg';
+  icon?: IconKey;
+  iconPosition?: 'left' | 'right';
+  type?: 'button' | 'submit' | 'reset';
+  full?: boolean;
+  class?: string;
+  id?: string;
+  ariaLabel?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  iconPosition = 'right',
+  type = 'button',
+  full = false,
+  class: className,
+  id,
+  ariaLabel,
+} = Astro.props;
+
+const variants: Record<NonNullable<Props['variant']>, string> = {
+  primary:
+    'bg-accent text-ink hover:bg-[color-mix(in_srgb,var(--accent)_86%,white)] hover:shadow-lift',
+  dark: 'bg-dark text-ondark hover:bg-accent hover:text-ink',
+  'outline-light':
+    'border-2 border-white/30 text-ondark hover:border-accent hover:text-accent',
+  'outline-dark':
+    'border-2 border-ink/25 text-ink hover:border-accent-strong hover:text-accent-strong',
+};
+
+const sizes: Record<NonNullable<Props['size']>, string> = {
+  md: 'min-h-11 px-5 py-2.5 text-lg',
+  lg: 'min-h-14 px-7 py-3 text-xl',
+};
+
+const classes = [
+  'group/btn inline-flex items-center justify-center gap-2 rounded-md font-display font-bold uppercase leading-none tracking-wider no-underline transition duration-200 active:translate-y-px',
+  variants[variant],
+  sizes[size],
+  full && 'w-full',
+  className,
+];
+
+const external = href ? /^https?:\/\//.test(href) : false;
+const iconSize = size === 'lg' ? 22 : 20;
+---
+
+{
+  href ? (
+    <a
+      href={href}
+      id={id}
+      aria-label={ariaLabel}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
+      class:list={classes}
+    >
+      {icon && iconPosition === 'left' && <Icon name={icon} size={iconSize} />}
+      <slot />
+      {icon && iconPosition === 'right' && (
+        <Icon
+          name={icon}
+          size={iconSize}
+          class="transition-transform group-hover/btn:translate-x-0.5"
+        />
+      )}
+    </a>
+  ) : (
+    <button type={type} id={id} aria-label={ariaLabel} class:list={classes}>
+      {icon && iconPosition === 'left' && <Icon name={icon} size={iconSize} />}
+      <slot />
+      {icon && iconPosition === 'right' && (
+        <Icon
+          name={icon}
+          size={iconSize}
+          class="transition-transform group-hover/btn:translate-x-0.5"
+        />
+      )}
+    </button>
+  )
+}

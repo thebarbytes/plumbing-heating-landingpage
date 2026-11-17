@@ -1,0 +1,71 @@
+---
+import Section from './Section.astro';
+import GlowBackground from './GlowBackground.astro';
+import Img from './Img.astro';
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { hero, images, business } = siteConfig;
+---
+
+<Section
+  tone="dark"
+  cut="bottom"
+  labelledBy="hero-heading"
+  pad={false}
+  class="z-10"
+  containerClass="pb-16 pt-14 md:pb-24 md:pt-20 lg:pb-32 lg:pt-28"
+>
+  <div slot="background" aria-hidden="true" class="absolute inset-0 -z-20">
+    <Img image={images.hero} priority fill sizes="100vw" />
+  </div>
+  <div
+    slot="background"
+    aria-hidden="true"
+    class="absolute inset-0 -z-[15] bg-linear-to-r from-dark/95 via-dark/80 to-dark/45"
+  >
+  </div>
+  <GlowBackground slot="background" strength="strong" />
+
+  <div class="max-w-4xl" data-reveal-stagger="110">
+    <p class="eyebrow" data-reveal>{hero.eyebrow}</p>
+
+    <h1 id="hero-heading" class="mt-4" data-reveal>
+      <span class="block">{hero.headline}</span>
+      <span class="block text-accent">{hero.headlineAccent}</span>
+    </h1>
+
+    <p class="lead mt-6 max-w-2xl" data-reveal>{hero.subtext}</p>
+
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row" data-reveal>
+      <Button href={business.phoneHref} size="lg" icon="phone" iconPosition="left">
+        {hero.primaryCta.label}
+      </Button>
+      <Button href={hero.secondaryCta.href} size="lg" variant="outline-light" icon="arrow-right">
+        {hero.secondaryCta.label}
+      </Button>
+    </div>
+
+    <p
+      class="mt-8 inline-flex items-center gap-2 rounded bg-signal px-3 py-1.5 font-display text-base font-bold uppercase tracking-wider text-ink"
+      data-reveal
+    >
+      <Icon name="clock" size={18} strokeWidth={2.25} />
+      {hero.imageNote}
+    </p>
+
+    <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2" data-reveal>
+      {
+        hero.trustRow.map((item) => (
+          <li class="flex items-center gap-2 font-medium text-ondark/90">
+            <span class="grid h-5 w-5 place-items-center rounded-full bg-accent text-ink">
+              <Icon name="check" size={13} strokeWidth={3} />
+            </span>
+            {item}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Section>

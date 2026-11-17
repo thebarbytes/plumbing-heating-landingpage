@@ -1,0 +1,61 @@
+---
+import type { ImageAsset } from '../types/site';
+
+interface Props {
+  image: ImageAsset;
+  priority?: boolean;
+  sizes?: string;
+  fill?: boolean;
+  ratio?: string;
+  alt?: string;
+  class?: string;
+  imgClass?: string;
+}
+
+const {
+  image,
+  priority = false,
+  sizes,
+  fill = false,
+  ratio,
+  alt,
+  class: className,
+  imgClass,
+} = Astro.props;
+
+const aspect = ratio ?? `${image.width} / ${image.height}`;
+---
+
+<div
+  class:list={[
+    'relative overflow-hidden bg-[linear-gradient(135deg,var(--surface-dark),#2b3545)]',
+    fill && 'h-full w-full',
+    className,
+  ]}
+  style={fill ? undefined : `aspect-ratio:${aspect}`}
+>
+  <img
+    data-img
+    src={image.src}
+    alt={alt ?? image.alt}
+    width={image.width}
+    height={image.height}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : undefined}
+    decoding="async"
+    sizes={sizes}
+    class:list={['absolute inset-0 h-full w-full object-cover', imgClass]}
+  />
+</div>
+
+<script>
+  document.querySelectorAll<HTMLImageElement>('img[data-img]').forEach((img) => {
+    const hide = (): void => {
+      img.style.visibility = 'hidden';
+    };
+    img.addEventListener('error', hide, { once: true });
+    if (img.complete && img.naturalWidth === 0) {
+      hide();
+    }
+  });
+</script>

@@ -1,11 +1,80 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Marquee from '../components/Marquee.astro';
+import TrustBadges from '../components/TrustBadges.astro';
+import Section from '../components/Section.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import Button from '../components/Button.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Guarantee from '../components/Guarantee.astro';
+import Stats from '../components/Stats.astro';
+import ServiceAreaChecker from '../components/ServiceAreaChecker.astro';
+import Testimonials from '../components/Testimonials.astro';
+import FAQ from '../components/FAQ.astro';
+import CTABanner from '../components/CTABanner.astro';
+import { siteConfig } from '../config/site';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const { seo, pages, services, faq, emergency } = siteConfig;
+const meta = seo.pages.home;
+const teaser = pages.home.emergencyTeaser;
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout description={meta.description} faqs={faq.items}>
+  <Hero />
+  <Marquee underCut />
+  <TrustBadges />
+
+  <Section tone="light" labelledBy="services-heading">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading
+        id="services-heading"
+        eyebrow={pages.home.servicesSection.eyebrow}
+        title={pages.home.servicesSection.title}
+        description={pages.home.servicesSection.description}
+      />
+      <div data-reveal>
+        <Button href="/services" variant="outline-dark" icon="arrow-right">
+          {services.viewAllLabel}
+        </Button>
+      </div>
+    </div>
+
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="90">
+      {
+        services.items.map((service) => (
+          <li data-reveal class="h-full">
+            <ServiceCard service={service} />
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Guarantee />
+  <HowItWorks />
+  <Stats />
+
+  <section aria-labelledby="teaser-heading" class="bg-accent text-ink">
+    <div class="container-site flex flex-col gap-6 py-10 md:flex-row md:items-center md:justify-between">
+      <div data-reveal>
+        <h2 id="teaser-heading" class="text-4xl md:text-5xl">{teaser.title}</h2>
+        <p class="mt-2 text-lg font-medium">{teaser.text}</p>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row" data-reveal>
+        <Button href={emergency.phoneHref} variant="dark" size="lg" icon="phone" iconPosition="left">
+          {emergency.phone}
+        </Button>
+        <Button href="/emergency" variant="outline-dark" size="lg" icon="arrow-right">
+          {teaser.cta}
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <ServiceAreaChecker tone="surface" />
+  <Testimonials />
+  <FAQ tone="surface" />
+  <CTABanner />
+</BaseLayout>

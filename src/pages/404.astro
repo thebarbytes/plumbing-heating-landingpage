@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import GlowBackground from '../components/GlowBackground.astro';
+import Button from '../components/Button.astro';
+import { siteConfig } from '../config/site';
+
+const { seo, pages, business, cta } = siteConfig;
+const meta = seo.pages.notFound;
+const page = pages.notFound;
+---
+
+<BaseLayout title={meta.title} description={meta.description} noindex>
+  <Section tone="dark" labelledBy="notfound-heading" containerClass="text-center">
+    <GlowBackground slot="background" strength="strong" />
+
+    <div class="mx-auto max-w-2xl py-6 md:py-12">
+      <p
+        aria-hidden="true"
+        class="font-display text-[clamp(7rem,32vw,16rem)] font-extrabold leading-[0.85] text-accent"
+      >
+        404
+      </p>
+      <p class="eyebrow mt-6">{page.eyebrow}</p>
+      <h1 id="notfound-heading" class="mt-3 text-[clamp(2.4rem,1.5rem+4vw,4rem)]">{page.title}</h1>
+      <p class="lead mx-auto mt-5">{page.text}</p>
+
+      <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button href={page.primary.href} size="lg" icon="arrow-right">
+          {page.primary.label}
+        </Button>
+        <Button href={page.secondary.href} size="lg" variant="outline-light">
+          {page.secondary.label}
+        </Button>
+        <Button href={business.phoneHref} size="lg" variant="outline-light" icon="phone" iconPosition="left">
+          {cta.callLabel}
+        </Button>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>

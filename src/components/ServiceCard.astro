@@ -1,0 +1,139 @@
+---
+import Img from './Img.astro';
+import Icon from './Icon.astro';
+import Button from './Button.astro';
+import { siteConfig } from '../config/site';
+import type { ServiceItem } from '../types/site';
+
+interface Props {
+  service: ServiceItem;
+  variant?: 'card' | 'detail';
+  reversed?: boolean;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { service, variant = 'card', reversed = false, headingLevel } = Astro.props;
+const { services, cta, business } = siteConfig;
+
+const Heading = headingLevel ?? (variant === 'detail' ? 'h2' : 'h3');
+const headingId = `service-${service.id}`;
+---
+
+{
+  variant === 'card' ? (
+    <article class="group relative flex h-full flex-col overflow-hidden rounded-xl bg-card shadow-card ring-1 ring-line transition duration-300 hover:-translate-y-1.5 hover:shadow-lift after:absolute after:inset-y-0 after:left-0 after:w-1.5 after:origin-top after:scale-y-0 after:bg-accent after:transition-transform after:duration-300 focus-within:after:scale-y-100 hover:after:scale-y-100">
+      <div class="relative">
+        <Img
+          image={service.image}
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          imgClass="transition-transform duration-500 group-hover:scale-105"
+        />
+        <span class="absolute left-4 top-4 max-w-[calc(100%-2rem)] rounded bg-signal px-2.5 py-1 font-display text-sm font-bold uppercase tracking-wider text-ink">
+          {service.priceLabel}
+        </span>
+      </div>
+      <div class="flex flex-1 flex-col p-6">
+        <div class="flex items-center gap-3">
+          <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-accent/15 text-accent-strong">
+            <Icon name={service.icon} size={24} />
+          </span>
+          <Heading class="text-2xl">
+            <a
+              href={`/services#${service.anchor}`}
+              class="no-underline after:absolute after:inset-0"
+            >
+              {service.name}
+            </a>
+          </Heading>
+        </div>
+        <p class="mt-3 text-muted">{service.shortDescription}</p>
+        <span class="mt-auto inline-flex items-center gap-1.5 pt-5 font-display font-bold uppercase tracking-wider text-accent-strong">
+          {services.learnMoreLabel}
+          <Icon
+            name="arrow-right"
+            size={18}
+            strokeWidth={2.25}
+            class="transition-transform group-hover:translate-x-1"
+          />
+        </span>
+      </div>
+    </article>
+  ) : (
+    <article
+      id={service.anchor}
+      aria-labelledby={headingId}
+      class="grid items-center gap-8 lg:grid-cols-2 lg:gap-14"
+    >
+      <div
+        data-reveal={reversed ? 'right' : 'left'}
+        class:list={[reversed && 'lg:order-2']}
+      >
+        <div class="relative isolate before:absolute before:inset-0 before:-z-10 before:translate-x-3 before:translate-y-3 before:rounded-xl before:bg-accent">
+          <Img
+            image={service.image}
+            class="rounded-xl"
+            sizes="(min-width: 1024px) 50vw, 100vw"
+          />
+        </div>
+      </div>
+
+      <div
+        data-reveal={reversed ? 'left' : 'right'}
+        class:list={[reversed && 'lg:order-1']}
+      >
+        <div class="flex items-center gap-3">
+          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent text-ink">
+            <Icon name={service.icon} size={26} />
+          </span>
+          <span class="rounded bg-signal px-2.5 py-1 font-display text-sm font-bold uppercase tracking-wider text-ink">
+            {service.priceLabel}
+          </span>
+        </div>
+
+        <Heading id={headingId} class="mt-4">
+          {service.name}
+        </Heading>
+        <p class="lead mt-4">{service.description}</p>
+
+        <div class="mt-6 grid gap-6 sm:grid-cols-2">
+          <div>
+            <h3 class="text-xl text-accent-strong">{services.includedLabel}</h3>
+            <ul class="mt-3 space-y-2">
+              {service.included.map((item) => (
+                <li class="flex items-start gap-2.5">
+                  <Icon
+                    name="check"
+                    size={18}
+                    strokeWidth={2.5}
+                    class="mt-1 text-accent-strong"
+                  />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-xl text-steel">{services.problemsLabel}</h3>
+            <ul class="mt-3 space-y-2">
+              {service.typicalProblems.map((item) => (
+                <li class="flex items-start gap-2.5">
+                  <span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-steel" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button href={cta.primary.href} icon="arrow-right">
+            {cta.requestLabel}
+          </Button>
+          <Button href={business.phoneHref} variant="outline-dark" icon="phone" iconPosition="left">
+            {business.phone}
+          </Button>
+        </div>
+      </div>
+    </article>
+  )
+}

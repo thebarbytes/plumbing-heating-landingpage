@@ -1,0 +1,45 @@
+---
+interface Props {
+  id?: string;
+  labelledBy?: string;
+  tone?: 'light' | 'surface' | 'dark';
+  cut?: 'none' | 'top' | 'bottom' | 'both';
+  pad?: boolean;
+  class?: string;
+  containerClass?: string;
+}
+
+const {
+  id,
+  labelledBy,
+  tone = 'light',
+  cut = 'none',
+  pad = true,
+  class: className,
+  containerClass,
+} = Astro.props;
+
+const toneClasses: Record<NonNullable<Props['tone']>, string> = {
+  light: 'bg-page text-ink',
+  surface: 'bg-card text-ink',
+  dark: 'dark',
+};
+
+const cutClasses: Record<NonNullable<Props['cut']>, string> = {
+  none: '',
+  top: 'cut-top',
+  bottom: 'cut-bottom',
+  both: 'cut-both',
+};
+---
+
+<section
+  id={id}
+  aria-labelledby={labelledBy}
+  class:list={['relative isolate overflow-hidden', toneClasses[tone], cutClasses[cut], className]}
+>
+  <slot name="background" />
+  <div class:list={['container-site relative z-10', pad && 'section-pad', containerClass]}>
+    <slot />
+  </div>
+</section>

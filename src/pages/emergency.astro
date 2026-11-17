@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import EmergencyTips from '../components/EmergencyTips.astro';
+import ServiceAreaChecker from '../components/ServiceAreaChecker.astro';
+import CTABanner from '../components/CTABanner.astro';
+import { siteConfig } from '../config/site';
+import type { BreadcrumbItem } from '../types/site';
+
+const { seo, pages, emergency, images, cta } = siteConfig;
+const meta = seo.pages.emergency;
+const hero = pages.emergency.hero;
+const steps = pages.emergency.steps;
+const promise = emergency.responsePromise;
+const breadcrumbs: BreadcrumbItem[] = [{ name: hero.eyebrow, path: '/emergency' }];
+---
+
+<BaseLayout title={meta.title} description={meta.description} breadcrumbs={breadcrumbs}>
+  <PageHero
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    description={hero.description}
+    breadcrumbs={breadcrumbs}
+    image={images.emergency}
+  >
+    <Button href={emergency.phoneHref} size="lg" icon="phone" iconPosition="left">
+      {emergency.callLabel}: {emergency.phone}
+    </Button>
+    <Button href={cta.primary.href} size="lg" variant="outline-light" icon="arrow-right">
+      {cta.requestLabel}
+    </Button>
+  </PageHero>
+
+  <Section tone="surface" labelledBy="promise-heading">
+    <div class="grid items-start gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+      <div
+        class="dark relative overflow-hidden rounded-2xl border-l-4 border-signal p-8 shadow-lift sm:p-10"
+        data-reveal="left"
+      >
+        <p class="eyebrow">{promise.title}</p>
+        <p class="mt-4 flex items-end gap-3" aria-label={`${promise.minutes} minutes`}>
+          <span
+            class="font-display text-[clamp(5rem,4rem+8vw,9rem)] font-extrabold leading-[0.85] text-accent"
+          >
+            {promise.minutes}
+          </span>
+          <span class="pb-2 font-display text-3xl font-bold uppercase tracking-wide" aria-hidden="true">
+            min
+          </span>
+        </p>
+        <p class="mt-5 text-ondark/80">{promise.text}</p>
+        <p class="mt-6 flex items-start gap-3 rounded-lg bg-white/5 p-4 text-sm text-ondark/90">
+          <Icon name="alert" size={20} class="mt-0.5 text-signal" />
+          {emergency.safetyNote}
+        </p>
+      </div>
+
+      <div>
+        <SectionHeading
+          id="promise-heading"
+          eyebrow={pages.emergency.stepsSection.eyebrow}
+          title={pages.emergency.stepsSection.title}
+          description={pages.emergency.stepsSection.description}
+        />
+        <ol class="mt-8 space-y-5" data-reveal-stagger="100">
+          {
+            steps.map((step, index) => (
+              <li class="flex gap-4" data-reveal>
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-accent text-ink">
+                  <Icon name={step.icon} size={24} />
+                </span>
+                <div>
+                  <p class="font-display text-sm font-bold tracking-widest text-accent-strong">
+                    {String(index + 1).padStart(2, '0')}
+                  </p>
+                  <h3 class="text-2xl">{step.title}</h3>
+                  <p class="mt-1 text-muted">{step.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </Section>
+
+  <EmergencyTips tone="light" />
+  <ServiceAreaChecker tone="surface" showCities={false} />
+  <CTABanner />
+</BaseLayout>

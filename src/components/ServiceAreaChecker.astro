@@ -1,0 +1,150 @@
+---
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+interface Props {
+  tone?: 'light' | 'surface';
+  showCities?: boolean;
+}
+
+const { tone = 'light', showCities = true } = Astro.props;
+const { serviceAreas, business, cta } = siteConfig;
+const { checker } = serviceAreas;
+---
+
+<Section tone={tone} labelledBy="areas-heading">
+  <div class="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+    <div>
+      <SectionHeading
+        id="areas-heading"
+        eyebrow={serviceAreas.section.eyebrow}
+        title={serviceAreas.section.title}
+        description={serviceAreas.section.description}
+      />
+      {
+        showCities && (
+          <ul
+            class="mt-8 flex flex-wrap gap-2.5"
+            aria-label={serviceAreas.section.title}
+            data-reveal-stagger="50"
+          >
+            {serviceAreas.cities.map((city) => (
+              <li
+                data-reveal
+                class="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-1.5 text-sm font-semibold ring-1 ring-line"
+              >
+                <Icon name="map" size={15} class="text-accent-strong" />
+                {city}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <div class="rounded-2xl bg-card p-6 shadow-card ring-1 ring-line sm:p-8" data-reveal="right">
+      <h3 class="text-3xl">{checker.title}</h3>
+      <form
+        data-area-checker
+        data-zips={JSON.stringify(serviceAreas.zipCodes)}
+        data-invalid={checker.invalid}
+        data-in={checker.inArea}
+        data-out={checker.outOfArea}
+        novalidate
+        class="mt-5"
+      >
+        <label for="area-zip" class="block font-display text-lg font-bold uppercase tracking-wide">
+          {checker.label}
+        </label>
+        <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+          <input
+            id="area-zip"
+            name="zip"
+            type="text"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            maxlength="5"
+            placeholder={checker.placeholder}
+            aria-describedby="area-result"
+            class="min-h-14 w-full rounded-lg border border-ink/20 bg-white px-4 text-lg text-ink placeholder:text-muted/70 focus-visible:border-steel aria-[invalid=true]:border-red-600"
+          />
+          <Button type="submit" size="lg" icon="search" iconPosition="left">
+            {checker.button}
+          </Button>
+        </div>
+
+        <div role="status" aria-live="polite">
+          <p
+            id="area-result"
+            data-checker-result
+            data-state="idle"
+            hidden
+            class="mt-4 rounded-lg border px-4 py-3 font-medium data-[state=in]:border-emerald-300 data-[state=in]:bg-emerald-50 data-[state=in]:text-emerald-900 data-[state=invalid]:border-red-300 data-[state=invalid]:bg-red-50 data-[state=invalid]:text-red-900 data-[state=out]:border-amber-300 data-[state=out]:bg-amber-50 data-[state=out]:text-amber-900"
+          >
+          </p>
+        </div>
+
+        <div data-checker-actions hidden class="mt-4 flex flex-wrap gap-3">
+          <Button href={business.phoneHref} icon="phone" iconPosition="left">
+            {cta.callLabel}
+          </Button>
+          <Button href={cta.primary.href} variant="outline-dark">
+            {cta.requestLabel}
+          </Button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Section>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-area-checker]').forEach((form) => {
+    const input = form.querySelector<HTMLInputElement>('input[name="zip"]');
+    const result = form.querySelector<HTMLElement>('[data-checker-result]');
+    const actions = form.querySelector<HTMLElement>('[data-checker-actions]');
+    if (!input || !result || !actions) return;
+
+    let zips: string[] = [];
+    try {
+      const parsed: unknown = JSON.parse(form.dataset.zips ?? '[]');
+      zips = Array.isArray(parsed) ? parsed.filter((z): z is string => typeof z === 'string') : [];
+    } catch {
+      zips = [];
+    }
+    const zipSet = new Set(zips);
+
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '').slice(0, 5);
+      if (input.getAttribute('aria-invalid') === 'true' && /^\d{5}$/.test(input.value)) {
+        input.setAttribute('aria-invalid', 'false');
+      }
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = input.value.trim();
+      let state: 'in' | 'out' | 'invalid';
+      let message: string;
+
+      if (!/^\d{5}$/.test(value)) {
+        state = 'invalid';
+        message = form.dataset.invalid ?? '';
+      } else if (zipSet.has(value)) {
+        state = 'in';
+        message = form.dataset.in ?? '';
+      } else {
+        state = 'out';
+        message = form.dataset.out ?? '';
+      }
+
+      input.setAttribute('aria-invalid', String(state === 'invalid'));
+      result.dataset.state = state;
+      result.textContent = message;
+      result.hidden = false;
+      actions.hidden = state === 'invalid';
+    });
+  });
+</script>

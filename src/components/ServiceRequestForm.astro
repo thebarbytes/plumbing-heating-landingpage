@@ -1,0 +1,369 @@
+---
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { contact, services, urgencyOptions, business, emergency } = siteConfig;
+const form = contact.form;
+const fields = form.fields;
+
+const EMERGENCY_VALUE = 'emergency';
+
+interface TextField {
+  key: 'name' | 'phone' | 'email' | 'zip';
+  type: string;
+  autocomplete: string;
+  inputmode?: string;
+  maxlength?: number;
+}
+
+const textFields: TextField[] = [
+  { key: 'name', type: 'text', autocomplete: 'name' },
+  { key: 'phone', type: 'tel', autocomplete: 'tel', inputmode: 'tel' },
+  { key: 'email', type: 'email', autocomplete: 'email', inputmode: 'email' },
+  { key: 'zip', type: 'text', autocomplete: 'postal-code', inputmode: 'numeric', maxlength: 5 },
+];
+
+const labelClass = 'block font-display text-lg font-bold uppercase tracking-wide';
+const controlClass =
+  'mt-1.5 min-h-12 w-full rounded-lg border border-ink/20 bg-white px-4 py-2.5 text-base text-ink placeholder:text-muted/70 focus-visible:border-steel aria-[invalid=true]:border-red-600';
+const errorClass = 'mt-1.5 text-sm font-medium text-red-700';
+---
+
+<form
+  id="request-form"
+  data-request-form
+  data-email={business.email}
+  data-subject={form.mailtoSubject}
+  data-emergency-value={EMERGENCY_VALUE}
+  action={contact.formAction || undefined}
+  method="post"
+  novalidate
+  class="rounded-2xl bg-card p-6 shadow-card ring-1 ring-line sm:p-8"
+>
+  <h2 class="text-4xl">{form.title}</h2>
+  <p class="mt-2 text-muted">{form.intro}</p>
+
+  <div
+    data-error-summary
+    role="alert"
+    tabindex="-1"
+    hidden
+    class="mt-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-900"
+  >
+    <p class="font-display text-xl font-bold uppercase tracking-wide">{form.errorSummary}</p>
+    <ul data-error-list class="mt-2 list-disc space-y-1 pl-5 text-sm"></ul>
+  </div>
+
+  <div class="mt-6 grid gap-5 sm:grid-cols-2">
+    {
+      textFields.map((field) => (
+        <div>
+          <label for={`req-${field.key}`} class={labelClass}>
+            {fields[field.key].label}
+            <span aria-hidden="true" class="text-accent-strong"> *</span>
+          </label>
+          <input
+            id={`req-${field.key}`}
+            name={field.key}
+            type={field.type}
+            autocomplete={field.autocomplete}
+            inputmode={field.inputmode}
+            maxlength={field.maxlength}
+            placeholder={fields[field.key].placeholder}
+            required
+            aria-describedby={`err-${field.key}`}
+            class={controlClass}
+          />
+          <p
+            id={`err-${field.key}`}
+            data-error-for={field.key}
+            data-field-label={fields[field.key].label}
+            hidden
+            class={errorClass}
+          >
+            <span class="flex items-start gap-1.5">
+              <Icon name="alert" size={16} class="mt-0.5" />
+              <span data-error-text>{fields[field.key].error}</span>
+            </span>
+          </p>
+        </div>
+      ))
+    }
+
+    <div class="sm:col-span-2">
+      <label for="req-service" class={labelClass}>
+        {fields.service.label}
+        <span aria-hidden="true" class="text-accent-strong"> *</span>
+      </label>
+      <select
+        id="req-service"
+        name="service"
+        required
+        aria-describedby="err-service"
+        class={controlClass}
+      >
+        <option value="">{form.servicePlaceholder}</option>
+        {services.items.map((service) => <option value={service.id}>{service.name}</option>)}
+      </select>
+      <p
+        id="err-service"
+        data-error-for="service"
+        data-field-label={fields.service.label}
+        hidden
+        class={errorClass}
+      >
+        <span class="flex items-start gap-1.5">
+          <Icon name="alert" size={16} class="mt-0.5" />
+          <span data-error-text>{fields.service.error}</span>
+        </span>
+      </p>
+    </div>
+
+    <fieldset class="sm:col-span-2" aria-describedby="urgency-hint err-urgency">
+      <legend class={labelClass}>
+        {fields.urgency.label}
+        <span aria-hidden="true" class="text-accent-strong"> *</span>
+      </legend>
+      <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {
+          urgencyOptions.map((option) => (
+            <label class="relative block cursor-pointer">
+              <input
+                type="radio"
+                name="urgency"
+                value={option.value}
+                data-description={option.description}
+                data-label={option.label}
+                class="peer sr-only"
+              />
+              <span class="block rounded-lg border-2 border-ink/15 bg-white px-3 py-3 text-center font-display text-lg font-bold uppercase tracking-wide transition-colors hover:border-accent peer-checked:border-accent peer-checked:bg-accent/15 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-steel">
+                {option.label}
+              </span>
+            </label>
+          ))
+        }
+      </div>
+      <p id="urgency-hint" data-urgency-hint class="mt-2 min-h-6 text-sm text-muted"></p>
+      <div
+        data-emergency-call
+        hidden
+        class="mt-2 flex items-center gap-3 rounded-lg border border-accent bg-accent/10 p-3"
+      >
+        <Icon name="phone" size={22} class="text-accent-strong" />
+        <a
+          href={emergency.phoneHref}
+          class="font-display text-xl font-bold uppercase tracking-wide text-ink"
+        >
+          {emergency.callLabel}: {emergency.phone}
+        </a>
+      </div>
+      <p
+        id="err-urgency"
+        data-error-for="urgency"
+        data-field-label={fields.urgency.label}
+        hidden
+        class={errorClass}
+      >
+        <span class="flex items-start gap-1.5">
+          <Icon name="alert" size={16} class="mt-0.5" />
+          <span data-error-text>{fields.urgency.error}</span>
+        </span>
+      </p>
+    </fieldset>
+
+    <div class="sm:col-span-2">
+      <label for="req-message" class={labelClass}>
+        {fields.message.label}
+        <span aria-hidden="true" class="text-accent-strong"> *</span>
+      </label>
+      <textarea
+        id="req-message"
+        name="message"
+        rows="5"
+        required
+        placeholder={fields.message.placeholder}
+        aria-describedby="err-message"
+        class={controlClass}></textarea>
+      <p
+        id="err-message"
+        data-error-for="message"
+        data-field-label={fields.message.label}
+        hidden
+        class={errorClass}
+      >
+        <span class="flex items-start gap-1.5">
+          <Icon name="alert" size={16} class="mt-0.5" />
+          <span data-error-text>{fields.message.error}</span>
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <Button type="submit" size="lg" full icon="arrow-right">
+      {form.submitLabel}
+    </Button>
+  </div>
+
+  <div
+    data-form-success
+    role="status"
+    hidden
+    class="mt-6 rounded-lg border border-emerald-300 bg-emerald-50 p-4 font-medium text-emerald-900"
+  >
+    {form.successMessage}
+  </div>
+</form>
+
+<script>
+  type FieldName = 'name' | 'phone' | 'email' | 'zip' | 'service' | 'urgency' | 'message';
+  type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+  const validators: Record<FieldName, (value: string) => boolean> = {
+    name: (v) => v.trim().length >= 2,
+    phone: (v) => v.replace(/\D/g, '').length >= 10,
+    email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()),
+    zip: (v) => /^\d{5}$/.test(v.trim()),
+    service: (v) => v !== '',
+    urgency: (v) => v !== '',
+    message: (v) => v.trim().length >= 10,
+  };
+
+  const fieldNames = Object.keys(validators) as FieldName[];
+  const isFieldName = (value: string): value is FieldName => value in validators;
+
+  const form = document.querySelector<HTMLFormElement>('[data-request-form]');
+  const summary = form?.querySelector<HTMLElement>('[data-error-summary]') ?? null;
+  const summaryList = form?.querySelector<HTMLElement>('[data-error-list]') ?? null;
+  const success = form?.querySelector<HTMLElement>('[data-form-success]') ?? null;
+  const hint = form?.querySelector<HTMLElement>('[data-urgency-hint]') ?? null;
+  const emergencyCall = form?.querySelector<HTMLElement>('[data-emergency-call]') ?? null;
+
+  if (form && summary && summaryList && success) {
+    const getControl = (name: FieldName): Control | null =>
+      form.querySelector<Control>(`[name="${name}"]`);
+
+    const getErrorEl = (name: FieldName): HTMLElement | null =>
+      form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+
+    const getValue = (name: FieldName): string => {
+      if (name === 'urgency') {
+        return form.querySelector<HTMLInputElement>('input[name="urgency"]:checked')?.value ?? '';
+      }
+      return getControl(name)?.value ?? '';
+    };
+
+    const validateField = (name: FieldName): boolean => {
+      const valid = validators[name](getValue(name));
+      const errorEl = getErrorEl(name);
+      if (errorEl) errorEl.hidden = valid;
+      if (name !== 'urgency') {
+        getControl(name)?.setAttribute('aria-invalid', String(!valid));
+      }
+      return valid;
+    };
+
+    const focusField = (name: FieldName): void => {
+      const target =
+        name === 'urgency'
+          ? form.querySelector<HTMLInputElement>('input[name="urgency"]')
+          : getControl(name);
+      target?.focus();
+    };
+
+    const labelFor = (name: FieldName): string => getErrorEl(name)?.dataset.fieldLabel ?? name;
+
+    const displayValue = (name: FieldName): string => {
+      if (name === 'service') {
+        const select = getControl('service');
+        return select instanceof HTMLSelectElement
+          ? (select.selectedOptions[0]?.textContent ?? '')
+          : '';
+      }
+      if (name === 'urgency') {
+        return form.querySelector<HTMLInputElement>('input[name="urgency"]:checked')?.dataset.label ?? '';
+      }
+      return getValue(name).trim();
+    };
+
+    form.addEventListener('focusout', (event) => {
+      const target = event.target;
+      if (
+        (target instanceof HTMLInputElement ||
+          target instanceof HTMLSelectElement ||
+          target instanceof HTMLTextAreaElement) &&
+        isFieldName(target.name) &&
+        target.name !== 'urgency' &&
+        target.value !== ''
+      ) {
+        validateField(target.name);
+      }
+    });
+
+    const recheck = (event: Event): void => {
+      const target = event.target;
+      if (
+        !(
+          target instanceof HTMLInputElement ||
+          target instanceof HTMLSelectElement ||
+          target instanceof HTMLTextAreaElement
+        )
+      ) {
+        return;
+      }
+      if (!isFieldName(target.name)) return;
+      const errorEl = getErrorEl(target.name);
+      if (errorEl && !errorEl.hidden) validateField(target.name);
+    };
+
+    form.addEventListener('input', recheck);
+    form.addEventListener('change', recheck);
+
+    const emergencyValue = form.dataset.emergencyValue ?? '';
+    form.querySelectorAll<HTMLInputElement>('input[name="urgency"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (hint) hint.textContent = radio.dataset.description ?? '';
+        if (emergencyCall) emergencyCall.hidden = radio.value !== emergencyValue;
+      });
+    });
+
+    form.addEventListener('submit', (event) => {
+      const invalid = fieldNames.filter((name) => !validateField(name));
+      success.hidden = true;
+
+      if (invalid.length > 0) {
+        event.preventDefault();
+        summaryList.replaceChildren();
+        invalid.forEach((name) => {
+          const message = getErrorEl(name)?.querySelector('[data-error-text]')?.textContent ?? '';
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = '#';
+          link.className = 'underline';
+          link.textContent = `${labelFor(name)}: ${message}`;
+          link.addEventListener('click', (clickEvent) => {
+            clickEvent.preventDefault();
+            focusField(name);
+          });
+          item.append(link);
+          summaryList.append(item);
+        });
+        summary.hidden = false;
+        summary.focus();
+        return;
+      }
+
+      summary.hidden = true;
+
+      if (form.getAttribute('action')) return;
+
+      event.preventDefault();
+      const lines = fieldNames.map((name) => `${labelFor(name)}: ${displayValue(name)}`);
+      const subject = encodeURIComponent(form.dataset.subject ?? '');
+      const body = encodeURIComponent(lines.join('\n'));
+      window.location.href = `mailto:${form.dataset.email ?? ''}?subject=${subject}&body=${body}`;
+      success.hidden = false;
+    });
+  }
+</script>

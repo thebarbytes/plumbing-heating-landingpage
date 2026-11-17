@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Img from '../components/Img.astro';
+import Icon from '../components/Icon.astro';
+import Stats from '../components/Stats.astro';
+import Team from '../components/Team.astro';
+import CTABanner from '../components/CTABanner.astro';
+import { siteConfig } from '../config/site';
+import type { BreadcrumbItem } from '../types/site';
+
+const { seo, pages, images } = siteConfig;
+const meta = seo.pages.about;
+const about = pages.about;
+const breadcrumbs: BreadcrumbItem[] = [{ name: about.hero.eyebrow, path: '/about' }];
+---
+
+<BaseLayout title={meta.title} description={meta.description} breadcrumbs={breadcrumbs}>
+  <PageHero
+    eyebrow={about.hero.eyebrow}
+    title={about.hero.title}
+    description={about.hero.description}
+    breadcrumbs={breadcrumbs}
+  />
+
+  <Section tone="light" labelledBy="story-heading">
+    <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      <div data-reveal="left">
+        <div class="relative isolate before:absolute before:inset-0 before:-z-10 before:translate-x-3 before:translate-y-3 before:rounded-xl before:bg-accent">
+          <Img image={images.about} class="rounded-xl" sizes="(min-width: 1024px) 50vw, 100vw" />
+        </div>
+      </div>
+
+      <div data-reveal="right">
+        <p class="eyebrow">{about.story.eyebrow}</p>
+        <h2 id="story-heading" class="mt-3">{about.story.title}</h2>
+        <div class="mt-5 space-y-4 text-lg text-muted">
+          {about.story.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Stats />
+
+  <Section tone="surface" labelledBy="standards-heading">
+    <SectionHeading
+      id="standards-heading"
+      eyebrow={about.standardsSection.eyebrow}
+      title={about.standardsSection.title}
+      description={about.standardsSection.description}
+    />
+    <ul class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-reveal-stagger="100">
+      {
+        about.standards.map((item) => (
+          <li data-reveal>
+            <div class="h-full rounded-xl bg-page p-6 ring-1 ring-line transition duration-300 hover:-translate-y-1 hover:shadow-card">
+              <span class="grid h-12 w-12 place-items-center rounded-lg bg-accent/15 text-accent-strong">
+                <Icon name={item.icon} size={26} />
+              </span>
+              <h3 class="mt-4 text-2xl">{item.title}</h3>
+              <p class="mt-2 text-muted">{item.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section tone="light" labelledBy="values-heading">
+    <SectionHeading
+      id="values-heading"
+      eyebrow={about.valuesSection.eyebrow}
+      title={about.valuesSection.title}
+      description={about.valuesSection.description}
+    />
+    <ol class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2" data-reveal-stagger="100">
+      {
+        about.values.map((value, index) => (
+          <li class="flex gap-5 border-t-4 border-accent pt-5" data-reveal>
+            <span class="font-display text-5xl font-extrabold leading-none text-accent-strong">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <div>
+              <h3 class="text-3xl">{value.title}</h3>
+              <p class="mt-2 text-muted">{value.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Team />
+  <CTABanner />
+</BaseLayout>

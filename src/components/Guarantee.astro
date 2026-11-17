@@ -1,0 +1,50 @@
+---
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import Icon from './Icon.astro';
+import { siteConfig } from '../config/site';
+
+const { guarantee } = siteConfig;
+---
+
+<Section tone="surface" labelledBy="guarantee-heading">
+  <div class="grid items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+    <div>
+      <SectionHeading
+        id="guarantee-heading"
+        eyebrow={guarantee.section.eyebrow}
+        title={guarantee.section.title}
+        description={guarantee.section.description}
+      />
+      <p class="mt-6 max-w-xl text-muted" data-reveal>{guarantee.warrantyText}</p>
+
+      <div
+        class="dark mt-8 flex items-start gap-4 rounded-xl border-l-4 border-signal p-6 shadow-card"
+        data-reveal
+      >
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-accent text-ink">
+          <Icon name="dollar" size={26} />
+        </span>
+        <p class="font-display text-2xl font-bold uppercase leading-tight tracking-wide">
+          {guarantee.diagnosticFeeText}
+        </p>
+      </div>
+    </div>
+
+    <ul class="grid gap-5 sm:grid-cols-2" data-reveal-stagger="100">
+      {
+        guarantee.items.map((item) => (
+          <li data-reveal>
+            <div class="h-full rounded-xl bg-page p-6 ring-1 ring-line transition duration-300 hover:-translate-y-1 hover:shadow-card">
+              <span class="grid h-12 w-12 place-items-center rounded-lg bg-accent/15 text-accent-strong">
+                <Icon name={item.icon} size={26} />
+              </span>
+              <h3 class="mt-4 text-2xl">{item.title}</h3>
+              <p class="mt-2 text-muted">{item.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Section>
